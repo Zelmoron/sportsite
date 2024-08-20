@@ -1,0 +1,51 @@
+
+.navbar-toggler{
+    border: none;
+}
+.navbar-brand{
+    font-size: 35px;
+    color:  rgb(123, 121, 119);
+}
+.navbar-brand:hover{
+    color:  rgb(123, 121, 119);
+}
+.navbar{
+    height: 100px;
+    background-color: rgb(213, 205, 205);
+}
+.nav-link{
+    color: rgb(169, 164, 159);
+    font-weight: 600;
+    font-size: 25px;
+    position: relative;
+}
+.nav-link:hover, .nav-link.active{
+    color: rgb(32, 32, 32);
+}
+
+.nav-link::before{
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0%;
+    height: 2px;
+    background-color: red;
+    transition: 0.3s ease-in-out;
+    visibility: hidden;
+
+}
+.nav-link:hover::before, .nav-link.active::before{
+    width: 100%;
+    visibility: visible;
+
+}
+
+.graf{
+    background-color: rgb(228, 223, 223);
+    height: auto;
+    
+    margin-top: 100px;
+}
+
