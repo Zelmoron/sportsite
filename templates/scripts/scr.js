@@ -16,7 +16,7 @@ async function squat() {
     const u = document.getElementById("myChart")
     u.remove()
     const c = document.createElement("canvas")
-    c.style="width:100%;max-width:700px"
+    c.style="width:100%;max-width:700px;height:500px;"
     c.id = "myChart"
     const g = document.getElementById("graf")
     g.append(c)
@@ -55,7 +55,7 @@ async function bench() {
      const u = document.getElementById("myChart")
     u.remove()
     const c = document.createElement("canvas")
-    c.style="width:100%;max-width:700px"
+    c.style="width:100%;max-width:700px;height:500px;"
     c.id = "myChart"
     const g = document.getElementById("graf")
     g.append(c)

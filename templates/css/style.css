@@ -44,8 +44,18 @@
 
 .graf{
     background-color: rgb(228, 223, 223);
-    height: auto;
+    height: 550px;
     
     margin-top: 100px;
+
 }
 
+.container{
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+}
+
+.item{
+    display: flex;
+}
