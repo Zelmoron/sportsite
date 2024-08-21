@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -16,10 +17,19 @@ type Admin struct {
 	Name     string
 	Password string
 }
-type Squat struct {
+type Ex struct {
 	XValues   []string `json:"x"`
 	YValues   []int    `json:"y"`
 	BarColors []string `json:"color"`
+}
+type Users struct {
+	Name    string
+	Surname string
+	Bench   int
+	Squat   int
+	Dead    int
+	Pull    int
+	Ton     int
 }
 
 func main() {
@@ -39,10 +49,15 @@ func handlers() {
 	rtr.HandleFunc("/", index)
 	rtr.HandleFunc("/logo", logo)
 	rtr.HandleFunc("/get", get).Methods("POST")
+	rtr.HandleFunc("/insert", insert).Methods("POST")
+	rtr.HandleFunc("/update", update).Methods("POST")
 
 	//обработчики силовых
 	rtr.HandleFunc("/squat", squat).Methods("GET")
 	rtr.HandleFunc("/bench", bench).Methods("GET")
+	rtr.HandleFunc("/dead", dead).Methods("GET")
+	rtr.HandleFunc("/pull", pull).Methods("GET")
+	rtr.HandleFunc("/ton", ton).Methods("GET")
 
 	//Все адреса будут обрабатываться через rtr
 	http.Handle("/", rtr)
@@ -108,19 +123,133 @@ func get(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// функция для отправки json на присед
-func squat(w http.ResponseWriter, r *http.Request) {
-	//подключение к бд и парсинг оттуда имен и результаты, цвет статичный , взависимости от упражнений
-	names := []string{"Igor", "Nikita", "Gosha", "Rusia", "FFF"}
-	colors := []string{}
-	for i := 0; i < len(names); i++ {
-		colors = append(colors, "red")
+func insert(w http.ResponseWriter, r *http.Request) {
+	name := r.FormValue("username")
+	surname := r.FormValue("usersurname")
+	bench := r.FormValue("bench")
+	dead := r.FormValue("dead")
+	squat := r.FormValue("squat")
+	pull := r.FormValue("pull")
+	ton := 0
+	dataForSum := []string{bench, squat, dead}
+	for _, v := range dataForSum {
+		value, err := strconv.Atoi(v)
+		if err != nil {
+			log.Println("Оштбка перевода в int")
+		} else {
+			ton += value
+		}
 
 	}
 
-	s := Squat{
+	fmt.Println(name, surname, bench, dead, squat, pull, ton)
+	db, err := pgxpool.Connect(context.Background(), "postgres://postgres:132313Igor@localhost:5432/sportsite")
+
+	if err != nil {
+		log.Println("Error with connection")
+	}
+	defer db.Close()
+
+	result, err := db.Exec(context.Background(), "INSERT INTO users (Name,Surname,Bench,Squat,Dead,Pull,Ton) VALUES ($1,$2,$3,$4,$5,$6,$7)", name, surname, bench, squat, dead, pull, ton)
+	fmt.Println(result)
+
+	type Tst struct {
+		Name    string
+		Surname string
+		Bench   int
+		Squat   int
+		Dead    int
+		Pull    int
+		Ton     int
+	}
+
+	tst, _ := db.Query(context.Background(), "SELECT Name,Surname,Bench,Squat,Dead,Pull,Ton FROM users")
+	for tst.Next() {
+		var t Tst
+		tst.Scan(&t.Name, &t.Surname, &t.Bench, &t.Squat, &t.Dead, &t.Pull, &t.Ton)
+		fmt.Println(t)
+	}
+
+}
+
+func update(w http.ResponseWriter, r *http.Request) {
+	name := r.FormValue("username")
+	surname := r.FormValue("usersurname")
+	bench := r.FormValue("bench")
+	dead := r.FormValue("dead")
+	squat := r.FormValue("squat")
+	pull := r.FormValue("pull")
+	ton := 0
+	dataForSum := []string{bench, squat, dead, pull}
+	for _, v := range dataForSum {
+		value, err := strconv.Atoi(v)
+		if err != nil {
+			log.Println("Оштбка перевода в int")
+		} else {
+			ton += value
+		}
+
+	}
+
+	fmt.Println(name, surname, bench, dead, squat, pull, ton)
+	// db, err := pgxpool.Connect(context.Background(), "postgres://postgres:132313Igor@localhost:5432/sportsite")
+
+	// if err != nil {
+	// 	log.Println("Error with connection")
+	// }
+	// defer db.Close()
+
+	// result, err := db.Exec(context.Background(), "INSERT INTO users (Name,Surname,Bench,Squat,Dead,Pull,Ton) VALUES ($1,$2,$3,$4,$5,$6,$7)", name, surname, bench, squat, dead, pull, ton)
+	// fmt.Println(result)
+
+	// type Tst struct {
+	// 	Name    string
+	// 	Surname string
+	// 	Bench   int
+	// 	Squat   int
+	// 	Dead    int
+	// 	Pull    int
+	// 	Ton     int
+	// }
+
+	// tst, _ := db.Query(context.Background(), "SELECT Name,Surname,Bench,Squat,Dead,Pull,Ton FROM users")
+	// for tst.Next() {
+	// 	var t Tst
+	// 	tst.Scan(&t.Name, &t.Surname, &t.Bench, &t.Squat, &t.Dead, &t.Pull, &t.Ton)
+	// 	fmt.Println(t)
+	// }
+	w.Write([]byte("на доработке,сделать нормальный выбор"))
+
+}
+
+// функция для отправки json на присед
+func squat(w http.ResponseWriter, r *http.Request) {
+	//подключение к бд и парсинг оттуда имен и результаты, цвет статичный , взависимости от упражнений
+	names := []string{}
+	count := []int{}
+	colors := []string{}
+	db, err := pgxpool.Connect(context.Background(), "postgres://postgres:132313Igor@localhost:5432/sportsite")
+
+	if err != nil {
+		log.Println("Error with connection")
+	}
+	defer db.Close()
+	result, _ := db.Query(context.Background(), "SELECT Name,Surname,Squat FROM users")
+	for result.Next() {
+		var t Users
+		result.Scan(&t.Name, &t.Surname, &t.Squat)
+		names = append(names, t.Name+" "+t.Surname)
+		count = append(count, t.Squat)
+	}
+
+	for i := 0; i < len(names); i++ {
+		colors = append(colors, "blue")
+
+	}
+
+	s := Ex{
 		XValues:   names,
-		YValues:   []int{55, 49, 44, 24, 15},
+		YValues:   count,
 		BarColors: colors,
 	}
 	// Сериализация структуры в строку
@@ -136,16 +265,152 @@ func squat(w http.ResponseWriter, r *http.Request) {
 
 // функция для отправки json на жим
 func bench(w http.ResponseWriter, r *http.Request) {
-	names := []string{"Igor", "Nikita", "Gosha", "Rusia", "FFF"}
+	//подключение к бд и парсинг оттуда имен и результаты, цвет статичный , взависимости от упражнений
+	names := []string{}
+	count := []int{}
 	colors := []string{}
+	db, err := pgxpool.Connect(context.Background(), "postgres://postgres:132313Igor@localhost:5432/sportsite")
+
+	if err != nil {
+		log.Println("Error with connection")
+	}
+	defer db.Close()
+	result, _ := db.Query(context.Background(), "SELECT Name,Surname,Bench FROM users")
+	for result.Next() {
+		var t Users
+		result.Scan(&t.Name, &t.Surname, &t.Bench)
+		names = append(names, t.Name+" "+t.Surname)
+		count = append(count, t.Bench)
+	}
+
 	for i := 0; i < len(names); i++ {
 		colors = append(colors, "white")
 
 	}
 
-	s := Squat{
+	s := Ex{
 		XValues:   names,
-		YValues:   []int{55, 49, 30, 24, 40},
+		YValues:   count,
+		BarColors: colors,
+	}
+	// Сериализация структуры в строку
+	jsonBytes, err := json.Marshal(&s)
+	if err != nil {
+		// Используем Fatal только для примера,
+		// нельзя использовать в реальных приложениях
+		log.Fatalln("marshal ", err.Error())
+	}
+
+	w.Write(jsonBytes)
+}
+
+func dead(w http.ResponseWriter, r *http.Request) {
+	//подключение к бд и парсинг оттуда имен и результаты, цвет статичный , взависимости от упражнений
+	names := []string{}
+	count := []int{}
+	colors := []string{}
+	db, err := pgxpool.Connect(context.Background(), "postgres://postgres:132313Igor@localhost:5432/sportsite")
+
+	if err != nil {
+		log.Println("Error with connection")
+	}
+	defer db.Close()
+	result, _ := db.Query(context.Background(), "SELECT Name,Surname,Dead FROM users")
+	for result.Next() {
+		var t Users
+		result.Scan(&t.Name, &t.Surname, &t.Dead)
+		names = append(names, t.Name+" "+t.Surname)
+		count = append(count, t.Dead)
+	}
+
+	for i := 0; i < len(names); i++ {
+		colors = append(colors, "red")
+
+	}
+
+	s := Ex{
+		XValues:   names,
+		YValues:   count,
+		BarColors: colors,
+	}
+	// Сериализация структуры в строку
+	jsonBytes, err := json.Marshal(&s)
+	if err != nil {
+		// Используем Fatal только для примера,
+		// нельзя использовать в реальных приложениях
+		log.Fatalln("marshal ", err.Error())
+	}
+
+	w.Write(jsonBytes)
+}
+
+func pull(w http.ResponseWriter, r *http.Request) {
+	//подключение к бд и парсинг оттуда имен и результаты, цвет статичный , взависимости от упражнений
+	names := []string{}
+	count := []int{}
+	colors := []string{}
+	db, err := pgxpool.Connect(context.Background(), "postgres://postgres:132313Igor@localhost:5432/sportsite")
+
+	if err != nil {
+		log.Println("Error with connection")
+	}
+	defer db.Close()
+	result, _ := db.Query(context.Background(), "SELECT Name,Surname,Pull FROM users")
+	for result.Next() {
+		var t Users
+		result.Scan(&t.Name, &t.Surname, &t.Pull)
+		names = append(names, t.Name+" "+t.Surname)
+		count = append(count, t.Pull)
+	}
+
+	for i := 0; i < len(names); i++ {
+		colors = append(colors, "brown")
+
+	}
+
+	s := Ex{
+		XValues:   names,
+		YValues:   count,
+		BarColors: colors,
+	}
+	// Сериализация структуры в строку
+	jsonBytes, err := json.Marshal(&s)
+	if err != nil {
+		// Используем Fatal только для примера,
+		// нельзя использовать в реальных приложениях
+		log.Fatalln("marshal ", err.Error())
+	}
+
+	w.Write(jsonBytes)
+}
+
+func ton(w http.ResponseWriter, r *http.Request) {
+	//подключение к бд и парсинг оттуда имен и результаты, цвет статичный , взависимости от упражнений
+	names := []string{}
+	count := []int{}
+	colors := []string{}
+	db, err := pgxpool.Connect(context.Background(), "postgres://postgres:132313Igor@localhost:5432/sportsite")
+
+	if err != nil {
+		log.Println("Error with connection")
+	}
+	defer db.Close()
+	result, _ := db.Query(context.Background(), "SELECT Name,Surname,Ton FROM users")
+	for result.Next() {
+		var t Users
+		result.Scan(&t.Name, &t.Surname, &t.Ton)
+		names = append(names, t.Name+" "+t.Surname)
+		count = append(count, t.Ton)
+	}
+
+	for i := 0; i < len(names); i++ {
+		colors = append(colors, "black")
+
+	}
+
+	s := Ex{
+		XValues:   names,
+		YValues:   count,
 		BarColors: colors,
 	}
 	// Сериализация структуры в строку
