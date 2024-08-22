@@ -1,3 +1,51 @@
+function starterBar(){
+  document.getElementById('myChart').innerHTML = new Chart("myChart", {
+    type: "bar",
+    data: {
+      labels: ['/',"/",'/','/',"/",'/','/',"/",'/','/',"/",'/'],  
+      datasets: [{
+        label:"Menu",
+        backgroundColor: ["gray"],
+        data: [1,5,9,14,18,22,26,30,34,38,42,46],
+        borderWidth: 1
+      }]
+      
+    },
+    
+    
+  
+  });
+}
+starterBar()
+
+var s = 0 
+function getType(value){
+  
+  s+=value
+  
+
+  switch (s){
+    case 0:
+      return "bar"
+    case 1:
+      return "line"
+    case 2:
+      return "doughnut"
+    case 3:
+      return "pie"
+    case 4:
+      return "polarArea"
+    case 5:
+      return "radar"
+    case 6:
+      s = 0
+      return "bar"
+      
+  }
+  
+  
+}
+
 async function squat() {
               
     const response = await fetch('http://127.0.0.1:8080/squat',{
@@ -21,7 +69,7 @@ async function squat() {
     const g = document.getElementById("graf")
     g.append(c)
     document.getElementById('myChart').innerHTML = new Chart("myChart", {
-    type: "bar",
+    type: getType(0),
     data: {
       labels: xValues,  
       datasets: [{
@@ -60,7 +108,7 @@ async function bench() {
     const g = document.getElementById("graf")
     g.append(c)
     document.getElementById('myChart').innerHTML = new Chart("myChart", {
-    type: "bar",
+    type: getType(0),
     data: {
       labels: xValues,  
       datasets: [{
@@ -98,7 +146,7 @@ async function dead() {
   const g = document.getElementById("graf")
   g.append(c)
   document.getElementById('myChart').innerHTML = new Chart("myChart", {
-  type: "bar",
+  type: getType(0),
   data: {
     labels: xValues,  
     datasets: [{
@@ -137,7 +185,7 @@ async function pull() {
   const g = document.getElementById("graf")
   g.append(c)
   document.getElementById('myChart').innerHTML = new Chart("myChart", {
-  type: "bar",
+  type: getType(0),
   data: {
     labels: xValues,  
     datasets: [{
@@ -176,7 +224,7 @@ async function ton() {
   const g = document.getElementById("graf")
   g.append(c)
   document.getElementById('myChart').innerHTML = new Chart("myChart", {
-  type: "bar",
+  type: getType(0),
   data: {
     labels: xValues,  
     datasets: [{

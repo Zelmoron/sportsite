@@ -225,6 +225,10 @@ func update(w http.ResponseWriter, r *http.Request) {
 // функция для отправки json на присед
 func squat(w http.ResponseWriter, r *http.Request) {
 	//подключение к бд и парсинг оттуда имен и результаты, цвет статичный , взависимости от упражнений
+	colorForGraf := []string{"red", "blue", "green", "yellow", "purple",
+		"orange", "pink", "brown", "gray", "black",
+		"white", "cyan", "magenta", "lime", "gold",
+		"silver", "bronze", "indigo", "teal", "navy"}
 	names := []string{}
 	count := []int{}
 	colors := []string{}
@@ -243,7 +247,11 @@ func squat(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for i := 0; i < len(names); i++ {
-		colors = append(colors, "blue")
+		j := i
+		if j == 20 {
+			j = 0
+		}
+		colors = append(colors, colorForGraf[j])
 
 	}
 
@@ -265,6 +273,10 @@ func squat(w http.ResponseWriter, r *http.Request) {
 
 // функция для отправки json на жим
 func bench(w http.ResponseWriter, r *http.Request) {
+	colorForGraf := []string{"red", "blue", "green", "yellow", "purple",
+		"orange", "pink", "brown", "gray", "black",
+		"white", "cyan", "magenta", "lime", "gold",
+		"silver", "bronze", "indigo", "teal", "navy"}
 	//подключение к бд и парсинг оттуда имен и результаты, цвет статичный , взависимости от упражнений
 	names := []string{}
 	count := []int{}
@@ -284,7 +296,11 @@ func bench(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for i := 0; i < len(names); i++ {
-		colors = append(colors, "white")
+		j := i
+		if j == 20 {
+			j = 0
+		}
+		colors = append(colors, colorForGraf[j])
 
 	}
 
@@ -305,6 +321,10 @@ func bench(w http.ResponseWriter, r *http.Request) {
 }
 
 func dead(w http.ResponseWriter, r *http.Request) {
+	colorForGraf := []string{"red", "blue", "green", "yellow", "purple",
+		"orange", "pink", "brown", "gray", "black",
+		"white", "cyan", "magenta", "lime", "gold",
+		"silver", "bronze", "indigo", "teal", "navy"}
 	//подключение к бд и парсинг оттуда имен и результаты, цвет статичный , взависимости от упражнений
 	names := []string{}
 	count := []int{}
@@ -324,7 +344,11 @@ func dead(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for i := 0; i < len(names); i++ {
-		colors = append(colors, "red")
+		j := i
+		if j == 20 {
+			j = 0
+		}
+		colors = append(colors, colorForGraf[j])
 
 	}
 
@@ -345,6 +369,10 @@ func dead(w http.ResponseWriter, r *http.Request) {
 }
 
 func pull(w http.ResponseWriter, r *http.Request) {
+	colorForGraf := []string{"red", "blue", "green", "yellow", "purple",
+		"orange", "pink", "brown", "gray", "black",
+		"white", "cyan", "magenta", "lime", "gold",
+		"silver", "bronze", "indigo", "teal", "navy"}
 	//подключение к бд и парсинг оттуда имен и результаты, цвет статичный , взависимости от упражнений
 	names := []string{}
 	count := []int{}
@@ -364,7 +392,11 @@ func pull(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for i := 0; i < len(names); i++ {
-		colors = append(colors, "brown")
+		j := i
+		if j == 20 {
+			j = 0
+		}
+		colors = append(colors, colorForGraf[j])
 
 	}
 
@@ -385,6 +417,10 @@ func pull(w http.ResponseWriter, r *http.Request) {
 }
 
 func ton(w http.ResponseWriter, r *http.Request) {
+	colorForGraf := []string{"red", "blue", "green", "yellow", "purple",
+		"orange", "pink", "brown", "gray", "black",
+		"white", "cyan", "magenta", "lime", "gold",
+		"silver", "bronze", "indigo", "teal", "navy"}
 	//подключение к бд и парсинг оттуда имен и результаты, цвет статичный , взависимости от упражнений
 	names := []string{}
 	count := []int{}
@@ -404,7 +440,11 @@ func ton(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for i := 0; i < len(names); i++ {
-		colors = append(colors, "black")
+		j := i
+		if j == 20 {
+			j = 0
+		}
+		colors = append(colors, colorForGraf[j])
 
 	}
 
