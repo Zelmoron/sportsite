@@ -96,48 +96,18 @@
 footer{
     width: auto;
     height: auto;
-    height: 100px;
     
+   
     background:linear-gradient(to right,rgb(182, 182, 189),rgb(255, 255, 255),rgb(182, 182, 189));
     box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
 }
 
 
-.liner{
-    margin-left: 45%;
-    padding-top: 30px;
-   
-    display: flex;
-   
-    
+.tg-cont{
+    padding-top: 5px;
+    padding-left: 30px;
 }
-.M{
-    transition: 0.2s;
-    font-size: 25px;
-    color: rgb(123, 121, 119);
-    
+.tg{
+    text-decoration: none;
+    color: rgb(136, 131, 235);
 }
-.M:hover{
-    color:bisque;
-}
-.zero{
-    visibility: hidden;
-}
-
-
-
-
-@media (max-width: 650px){
-    .liner{
-        margin-left: 0;
-    }
-}
-
-
-@media (max-width: 550px){
-    .M{
-        font-size: 20px;
-    }
-    
-}
-
