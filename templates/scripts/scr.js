@@ -1,50 +1,53 @@
 function starterBar(){
-  document.getElementById('myChart').innerHTML = new Chart("myChart", {
-    type: "bar",
+  document.getElementById('myChart').innerHTML = new Chart(document.getElementById("myChart"), {
+    type: 'horizontalBar',
     data: {
-      labels: ['/',"/",'/','/',"/",'/','/',"/",'/','/',"/",'/'],  
-      datasets: [{
-        label:"Menu",
-        backgroundColor: ["gray"],
-        data: [1,5,9,14,18,22,26,30,34,38,42,46],
-        borderWidth: 1
-      }]
-      
+      labels: ["/","/","/","/","/","/","/","/"],
+      datasets: [
+        {
+          label: "Population (millions)",
+          
+          data: [5,10,20,30,40,50,60,70,80]
+        }
+      ]
     },
-    
-    
-  
-  });
+   
+          
+    options: {
+      legend: { display: false },
+      
+    }
+});
 }
 starterBar()
 
-var s = 0 
-function getType(value){
+// var s = 0 
+// function getType(value){
   
-  s+=value
+//   s+=value
   
 
-  switch (s){
-    case 0:
-      return "bar"
-    case 1:
-      return "line"
-    case 2:
-      return "doughnut"
-    case 3:
-      return "pie"
-    case 4:
-      return "polarArea"
-    case 5:
-      return "radar"
-    case 6:
-      s = 0
-      return "bar"
+//   switch (s){
+//     case 0:
+//       return "bar"
+//     case 1:
+//       return "line"
+//     case 2:
+//       return "doughnut"
+//     case 3:
+//       return "pie"
+//     case 4:
+//       return "polarArea"
+//     case 5:
+//       return "radar"
+//     case 6:
+//       s = 0
+//       return "bar"
       
-  }
+//   }
   
   
-}
+// }
 
 async function squat() {
               
@@ -64,22 +67,26 @@ async function squat() {
     const u = document.getElementById("myChart")
     u.remove()
     const c = document.createElement("canvas")
-    c.style="width:100%;max-width:700px;height:500px;"
+    c.style="width:100%;max-width:700px;height:500px;margin:0 auto;"
     c.id = "myChart"
     const g = document.getElementById("graf")
     g.append(c)
     document.getElementById('myChart').innerHTML = new Chart("myChart", {
-    type: getType(0),
+    type: "bar",
     data: {
       labels: xValues,  
       datasets: [{
-        label:"Присед",
+        
         backgroundColor: barColors,
         data: yValues,
         borderWidth: 1
       }]
       
     },
+    options: {
+      legend: { display: false },
+      
+    }
     
 
 });
@@ -103,12 +110,12 @@ async function bench() {
      const u = document.getElementById("myChart")
     u.remove()
     const c = document.createElement("canvas")
-    c.style="width:100%;max-width:700px;height:500px;"
+    c.style="width:100%;max-width:700px;height:500px;margin:0 auto;"
     c.id = "myChart"
     const g = document.getElementById("graf")
     g.append(c)
     document.getElementById('myChart').innerHTML = new Chart("myChart", {
-    type: getType(0),
+    type: "bar",
     data: {
       labels: xValues,  
       datasets: [{
@@ -117,6 +124,10 @@ async function bench() {
         data: yValues
       }]
     },
+    options: {
+      legend: { display: false },
+      
+    }
     
     
 
@@ -141,12 +152,12 @@ async function dead() {
    const u = document.getElementById("myChart")
   u.remove()
   const c = document.createElement("canvas")
-  c.style="width:100%;max-width:700px;height:500px;"
+  c.style="width:100%;max-width:700px;height:500px;margin:0 auto;"
   c.id = "myChart"
   const g = document.getElementById("graf")
   g.append(c)
   document.getElementById('myChart').innerHTML = new Chart("myChart", {
-  type: getType(0),
+  type: "bar",
   data: {
     labels: xValues,  
     datasets: [{
@@ -155,6 +166,10 @@ async function dead() {
       data: yValues
     }]
   },
+  options: {
+    legend: { display: false },
+    
+  }
   
   
 
@@ -180,12 +195,12 @@ async function pull() {
    const u = document.getElementById("myChart")
   u.remove()
   const c = document.createElement("canvas")
-  c.style="width:100%;max-width:700px;height:500px;"
+  c.style="width:100%;max-width:700px;height:500px;margin:0 auto;"
   c.id = "myChart"
   const g = document.getElementById("graf")
   g.append(c)
   document.getElementById('myChart').innerHTML = new Chart("myChart", {
-  type: getType(0),
+  type: "bar",
   data: {
     labels: xValues,  
     datasets: [{
@@ -194,6 +209,10 @@ async function pull() {
       data: yValues
     }]
   },
+  options: {
+    legend: { display: false },
+    
+  }
   
   
 
@@ -219,12 +238,12 @@ async function ton() {
    const u = document.getElementById("myChart")
   u.remove()
   const c = document.createElement("canvas")
-  c.style="width:100%;max-width:700px;height:500px;"
+  c.style="width:100%;max-width:700px;height:500px;margin:0 auto;"
   c.id = "myChart"
   const g = document.getElementById("graf")
   g.append(c)
   document.getElementById('myChart').innerHTML = new Chart("myChart", {
-  type: getType(0),
+  type: "bar",
   data: {
     labels: xValues,  
     datasets: [{
@@ -233,6 +252,10 @@ async function ton() {
       data: yValues
     }]
   },
+  options: {
+    legend: { display: false },
+    
+  }
   
   
 

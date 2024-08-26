@@ -175,60 +175,38 @@ func insert(w http.ResponseWriter, r *http.Request) {
 func update(w http.ResponseWriter, r *http.Request) {
 	name := r.FormValue("username")
 	surname := r.FormValue("usersurname")
-	bench := r.FormValue("bench")
-	dead := r.FormValue("dead")
-	squat := r.FormValue("squat")
-	pull := r.FormValue("pull")
-	ton := 0
-	dataForSum := []string{bench, squat, dead, pull}
-	for _, v := range dataForSum {
-		value, err := strconv.Atoi(v)
-		if err != nil {
-			log.Println("Оштбка перевода в int")
-		} else {
-			ton += value
-		}
 
+	ex := r.FormValue("update")
+
+	fmt.Println(name, surname, ex)
+	db, err := pgxpool.Connect(context.Background(), "postgres://postgres:132313Igor@localhost:5432/sportsite")
+
+	if err != nil {
+		log.Println("Error with connection")
 	}
+	defer db.Close()
 
-	fmt.Println(name, surname, bench, dead, squat, pull, ton)
-	// db, err := pgxpool.Connect(context.Background(), "postgres://postgres:132313Igor@localhost:5432/sportsite")
+	type Up struct {
+		ex string
+	}
+	var u Up
+	result := db.QueryRow(context.Background(), "SELECT $1 FROM users WHERE Name = $2 AND Surname = $3", ex, name, surname).Scan(&u.ex)
+	fmt.Println(u, result)
 
-	// if err != nil {
-	// 	log.Println("Error with connection")
-	// }
-	// defer db.Close()
-
-	// result, err := db.Exec(context.Background(), "INSERT INTO users (Name,Surname,Bench,Squat,Dead,Pull,Ton) VALUES ($1,$2,$3,$4,$5,$6,$7)", name, surname, bench, squat, dead, pull, ton)
-	// fmt.Println(result)
-
-	// type Tst struct {
-	// 	Name    string
-	// 	Surname string
-	// 	Bench   int
-	// 	Squat   int
-	// 	Dead    int
-	// 	Pull    int
-	// 	Ton     int
-	// }
-
-	// tst, _ := db.Query(context.Background(), "SELECT Name,Surname,Bench,Squat,Dead,Pull,Ton FROM users")
-	// for tst.Next() {
-	// 	var t Tst
-	// 	tst.Scan(&t.Name, &t.Surname, &t.Bench, &t.Squat, &t.Dead, &t.Pull, &t.Ton)
-	// 	fmt.Println(t)
-	// }
-	w.Write([]byte("на доработке,сделать нормальный выбор"))
+	// w.Write([]byte("на доработке,сделать нормальный выбор"))
 
 }
 
 // функция для отправки json на присед
 func squat(w http.ResponseWriter, r *http.Request) {
 	//подключение к бд и парсинг оттуда имен и результаты, цвет статичный , взависимости от упражнений
-	colorForGraf := []string{"red", "blue", "green", "yellow", "purple",
-		"orange", "pink", "brown", "gray", "black",
-		"white", "cyan", "magenta", "lime", "gold",
-		"silver", "bronze", "indigo", "teal", "navy"}
+	colorForGraf := []string{"rgba(255, 99, 132, 0.5)",
+		"rgba(255, 159, 64, 0.5)",
+		"rgba(255, 205, 86, 0.5)",
+		"rgba(75, 192, 192, 0.5)",
+		"rgba(54, 162, 235, 0.5)",
+		"rgba(153, 102, 255, 0.5)",
+		"rgba(201, 203, 207, 0.5)"}
 	names := []string{}
 	count := []int{}
 	colors := []string{}
@@ -242,8 +220,13 @@ func squat(w http.ResponseWriter, r *http.Request) {
 	for result.Next() {
 		var t Users
 		result.Scan(&t.Name, &t.Surname, &t.Squat)
-		names = append(names, t.Name+" "+t.Surname)
-		count = append(count, t.Squat)
+		if t.Squat == 0 {
+			continue
+		} else {
+			names = append(names, t.Name+" "+t.Surname)
+			count = append(count, t.Squat)
+		}
+
 	}
 
 	for i := 0; i < len(names); i++ {
@@ -273,10 +256,13 @@ func squat(w http.ResponseWriter, r *http.Request) {
 
 // функция для отправки json на жим
 func bench(w http.ResponseWriter, r *http.Request) {
-	colorForGraf := []string{"red", "blue", "green", "yellow", "purple",
-		"orange", "pink", "brown", "gray", "black",
-		"white", "cyan", "magenta", "lime", "gold",
-		"silver", "bronze", "indigo", "teal", "navy"}
+	colorForGraf := []string{"rgba(255, 99, 132, 0.5)",
+		"rgba(255, 159, 64, 0.5)",
+		"rgba(255, 205, 86, 0.5)",
+		"rgba(75, 192, 192, 0.5)",
+		"rgba(54, 162, 235, 0.5)",
+		"rgba(153, 102, 255, 0.5)",
+		"rgba(201, 203, 207, 0.5)"}
 	//подключение к бд и парсинг оттуда имен и результаты, цвет статичный , взависимости от упражнений
 	names := []string{}
 	count := []int{}
@@ -290,9 +276,15 @@ func bench(w http.ResponseWriter, r *http.Request) {
 	result, _ := db.Query(context.Background(), "SELECT Name,Surname,Bench FROM users")
 	for result.Next() {
 		var t Users
+
 		result.Scan(&t.Name, &t.Surname, &t.Bench)
-		names = append(names, t.Name+" "+t.Surname)
-		count = append(count, t.Bench)
+		if t.Bench == 0 {
+			continue
+		} else {
+			names = append(names, t.Name+" "+t.Surname)
+			count = append(count, t.Bench)
+		}
+
 	}
 
 	for i := 0; i < len(names); i++ {
@@ -321,10 +313,13 @@ func bench(w http.ResponseWriter, r *http.Request) {
 }
 
 func dead(w http.ResponseWriter, r *http.Request) {
-	colorForGraf := []string{"red", "blue", "green", "yellow", "purple",
-		"orange", "pink", "brown", "gray", "black",
-		"white", "cyan", "magenta", "lime", "gold",
-		"silver", "bronze", "indigo", "teal", "navy"}
+	colorForGraf := []string{"rgba(255, 99, 132, 0.5)",
+		"rgba(255, 159, 64, 0.5)",
+		"rgba(255, 205, 86, 0.5)",
+		"rgba(75, 192, 192, 0.5)",
+		"rgba(54, 162, 235, 0.5)",
+		"rgba(153, 102, 255, 0.5)",
+		"rgba(201, 203, 207, 0.5)"}
 	//подключение к бд и парсинг оттуда имен и результаты, цвет статичный , взависимости от упражнений
 	names := []string{}
 	count := []int{}
@@ -339,8 +334,13 @@ func dead(w http.ResponseWriter, r *http.Request) {
 	for result.Next() {
 		var t Users
 		result.Scan(&t.Name, &t.Surname, &t.Dead)
-		names = append(names, t.Name+" "+t.Surname)
-		count = append(count, t.Dead)
+		if t.Dead == 0 {
+			continue
+		} else {
+			names = append(names, t.Name+" "+t.Surname)
+			count = append(count, t.Dead)
+		}
+
 	}
 
 	for i := 0; i < len(names); i++ {
@@ -369,10 +369,13 @@ func dead(w http.ResponseWriter, r *http.Request) {
 }
 
 func pull(w http.ResponseWriter, r *http.Request) {
-	colorForGraf := []string{"red", "blue", "green", "yellow", "purple",
-		"orange", "pink", "brown", "gray", "black",
-		"white", "cyan", "magenta", "lime", "gold",
-		"silver", "bronze", "indigo", "teal", "navy"}
+	colorForGraf := []string{"rgba(255, 99, 132, 0.5)",
+		"rgba(255, 159, 64, 0.5)",
+		"rgba(255, 205, 86, 0.5)",
+		"rgba(75, 192, 192, 0.5)",
+		"rgba(54, 162, 235, 0.5)",
+		"rgba(153, 102, 255, 0.5)",
+		"rgba(201, 203, 207, 0.5)"}
 	//подключение к бд и парсинг оттуда имен и результаты, цвет статичный , взависимости от упражнений
 	names := []string{}
 	count := []int{}
@@ -387,8 +390,13 @@ func pull(w http.ResponseWriter, r *http.Request) {
 	for result.Next() {
 		var t Users
 		result.Scan(&t.Name, &t.Surname, &t.Pull)
-		names = append(names, t.Name+" "+t.Surname)
-		count = append(count, t.Pull)
+		if t.Pull == 0 {
+			continue
+		} else {
+			names = append(names, t.Name+" "+t.Surname)
+			count = append(count, t.Pull)
+		}
+
 	}
 
 	for i := 0; i < len(names); i++ {
@@ -417,10 +425,13 @@ func pull(w http.ResponseWriter, r *http.Request) {
 }
 
 func ton(w http.ResponseWriter, r *http.Request) {
-	colorForGraf := []string{"red", "blue", "green", "yellow", "purple",
-		"orange", "pink", "brown", "gray", "black",
-		"white", "cyan", "magenta", "lime", "gold",
-		"silver", "bronze", "indigo", "teal", "navy"}
+	colorForGraf := []string{"rgba(255, 99, 132, 0.5)",
+		"rgba(255, 159, 64, 0.5)",
+		"rgba(255, 205, 86, 0.5)",
+		"rgba(75, 192, 192, 0.5)",
+		"rgba(54, 162, 235, 0.5)",
+		"rgba(153, 102, 255, 0.5)",
+		"rgba(201, 203, 207, 0.5)"}
 	//подключение к бд и парсинг оттуда имен и результаты, цвет статичный , взависимости от упражнений
 	names := []string{}
 	count := []int{}

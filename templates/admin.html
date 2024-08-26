@@ -40,14 +40,13 @@
                     <input type="text" name="username" required>
                     <p>Фамилия</p>
                     <input type="text" name="usersurname" required>
-                    <p>Жим</p>
-                    <input type="number" name="bench" required>
-                    <p>Становая</p>
-                    <input type="number" name="dead" required>
-                    <p>Присед</p>
-                    <input type="number" name="squat" required>
-                    <p>Подтягивания</p>
-                    <input type="number" name="pull" required>
+                    <select name="update">
+                        <optgroup label="Выбрать упражнение">
+                         <option value="Bench">Жим</option>
+                         <option value="Squat">Присед</option>
+                         <option value="Dead">Тяга</option>
+                        </optgroup>
+                    </select>
                     <button type="submit">
                         Изменить
                     </button>
