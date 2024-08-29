@@ -169,6 +169,7 @@ func insert(w http.ResponseWriter, r *http.Request) {
 		tst.Scan(&t.Name, &t.Surname, &t.Bench, &t.Squat, &t.Dead, &t.Pull, &t.Ton)
 		fmt.Println(t)
 	}
+	http.Redirect(w, r, "http://127.0.0.1:8080", http.StatusSeeOther)
 
 }
 
@@ -178,7 +179,11 @@ func update(w http.ResponseWriter, r *http.Request) {
 
 	ex := r.FormValue("update")
 
-	fmt.Println(name, surname, ex)
+	new_ex := r.FormValue("ex")
+
+	newIntEx, _ := strconv.Atoi(new_ex)
+
+	fmt.Println(name, surname, ex, new_ex)
 	db, err := pgxpool.Connect(context.Background(), "postgres://postgres:132313Igor@localhost:5432/sportsite")
 
 	if err != nil {
@@ -187,13 +192,19 @@ func update(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	type Up struct {
-		ex string
+		exercises int
+		ton       int
 	}
 	var u Up
-	result := db.QueryRow(context.Background(), "SELECT $1 FROM users WHERE Name = $2 AND Surname = $3", ex, name, surname).Scan(&u.ex)
-	fmt.Println(u, result)
+	err = db.QueryRow(context.Background(), fmt.Sprintf("SELECT %s,Ton Bench FROM users WHERE Name = $1 AND Surname = $2", ex), name, surname).Scan(&u.exercises, &u.ton)
+	fmt.Println(u)
+	different := newIntEx - u.exercises
+	newTon := different + u.ton
+	fmt.Println(different, newTon)
+	_, err = db.Exec(context.Background(), fmt.Sprintf("UPDATE users SET %s = %d WHERE Name = $1 AND Surname = $2", ex, newIntEx), name, surname)
+	_, err = db.Exec(context.Background(), fmt.Sprintf("UPDATE users SET Ton = %d WHERE Name = $1 AND Surname = $2", newTon), name, surname)
 
-	// w.Write([]byte("на доработке,сделать нормальный выбор"))
+	http.Redirect(w, r, "http://127.0.0.1:8080", http.StatusSeeOther)
 
 }
 
@@ -231,7 +242,7 @@ func squat(w http.ResponseWriter, r *http.Request) {
 
 	for i := 0; i < len(names); i++ {
 		j := i
-		if j == 20 {
+		if j == 7 {
 			j = 0
 		}
 		colors = append(colors, colorForGraf[j])
@@ -289,7 +300,7 @@ func bench(w http.ResponseWriter, r *http.Request) {
 
 	for i := 0; i < len(names); i++ {
 		j := i
-		if j == 20 {
+		if j == 7 {
 			j = 0
 		}
 		colors = append(colors, colorForGraf[j])
@@ -345,7 +356,7 @@ func dead(w http.ResponseWriter, r *http.Request) {
 
 	for i := 0; i < len(names); i++ {
 		j := i
-		if j == 20 {
+		if j == 7 {
 			j = 0
 		}
 		colors = append(colors, colorForGraf[j])
@@ -401,7 +412,7 @@ func pull(w http.ResponseWriter, r *http.Request) {
 
 	for i := 0; i < len(names); i++ {
 		j := i
-		if j == 20 {
+		if j == 7 {
 			j = 0
 		}
 		colors = append(colors, colorForGraf[j])
@@ -452,7 +463,7 @@ func ton(w http.ResponseWriter, r *http.Request) {
 
 	for i := 0; i < len(names); i++ {
 		j := i
-		if j == 20 {
+		if j == 7 {
 			j = 0
 		}
 		colors = append(colors, colorForGraf[j])

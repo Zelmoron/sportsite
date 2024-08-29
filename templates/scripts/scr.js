@@ -48,6 +48,25 @@ starterBar()
   
   
 // }
+var count = 0
+async function rotateBody(key) {
+  count += key
+  if  (count == 1){
+    document.body.style.transform = 'rotate(90deg)';
+    var reverse = document.getElementById("myChart")
+    reverse.style="width:700px;max-width:1000px;height:500px;"
+    document.getElementById("reverse_button").innerText = "Вернуть обратно"
+   
+  }
+  else if (count == 2){
+    document.body.style.transform = 'rotate(360deg)';
+    document.getElementById("reverse_button").innerText = "На весь экран"
+    count =0
+  }
+  
+
+  
+}
 
 async function squat() {
               

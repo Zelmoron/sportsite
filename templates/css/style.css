@@ -113,3 +113,15 @@ footer{
     text-decoration: none;
     color: rgb(136, 131, 235);
 }
+
+.reverse{
+    visibility:hidden;
+}
+
+
+@media (max-width:450px){
+
+        .reverse{
+            visibility: visible;
+        }
+}
