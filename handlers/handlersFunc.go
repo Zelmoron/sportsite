@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sort"
 	"strconv"
 
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -240,6 +241,7 @@ func squat(w http.ResponseWriter, r *http.Request) {
 	names := []string{}
 	count := []int{}
 	colors := []string{}
+	mapUser := make(map[string]int)
 	db, err := pgxpool.Connect(context.Background(), "postgres://postgres:132313Igor@localhost:5432/sportsite")
 
 	if err != nil {
@@ -253,10 +255,29 @@ func squat(w http.ResponseWriter, r *http.Request) {
 		if t.Squat == 0 {
 			continue
 		} else {
-			names = append(names, t.Name+" "+t.Surname)
-			count = append(count, t.Squat)
+			mapUser[t.Name+" "+t.Surname] = t.Squat
+
 		}
 
+	}
+	type key_value struct {
+		Key   string
+		Value int
+	}
+
+	var sorted_struct []key_value
+
+	for key, value := range mapUser {
+		sorted_struct = append(sorted_struct, key_value{key, value})
+	}
+
+	sort.Slice(sorted_struct, func(i, j int) bool {
+		return sorted_struct[i].Value < sorted_struct[j].Value
+	})
+
+	for _, key_value := range sorted_struct {
+		names = append(names, key_value.Key)
+		count = append(count, key_value.Value)
 	}
 
 	for i := 0; i < len(names); i++ {
@@ -304,6 +325,7 @@ func bench(w http.ResponseWriter, r *http.Request) {
 	names := []string{}
 	count := []int{}
 	colors := []string{}
+	mapUser := make(map[string]int)
 	db, err := pgxpool.Connect(context.Background(), "postgres://postgres:132313Igor@localhost:5432/sportsite")
 
 	if err != nil {
@@ -318,10 +340,29 @@ func bench(w http.ResponseWriter, r *http.Request) {
 		if t.Bench == 0 {
 			continue
 		} else {
-			names = append(names, t.Name+" "+t.Surname)
-			count = append(count, t.Bench)
+			mapUser[t.Name+" "+t.Surname] = t.Bench
+
 		}
 
+	}
+	type key_value struct {
+		Key   string
+		Value int
+	}
+
+	var sorted_struct []key_value
+
+	for key, value := range mapUser {
+		sorted_struct = append(sorted_struct, key_value{key, value})
+	}
+
+	sort.Slice(sorted_struct, func(i, j int) bool {
+		return sorted_struct[i].Value < sorted_struct[j].Value
+	})
+
+	for _, key_value := range sorted_struct {
+		names = append(names, key_value.Key)
+		count = append(count, key_value.Value)
 	}
 
 	for i := 0; i < len(names); i++ {
@@ -368,6 +409,7 @@ func dead(w http.ResponseWriter, r *http.Request) {
 	names := []string{}
 	count := []int{}
 	colors := []string{}
+	mapUser := make(map[string]int)
 	db, err := pgxpool.Connect(context.Background(), "postgres://postgres:132313Igor@localhost:5432/sportsite")
 
 	if err != nil {
@@ -381,10 +423,29 @@ func dead(w http.ResponseWriter, r *http.Request) {
 		if t.Dead == 0 {
 			continue
 		} else {
-			names = append(names, t.Name+" "+t.Surname)
-			count = append(count, t.Dead)
+			mapUser[t.Name+" "+t.Surname] = t.Dead
+
 		}
 
+	}
+	type key_value struct {
+		Key   string
+		Value int
+	}
+
+	var sorted_struct []key_value
+
+	for key, value := range mapUser {
+		sorted_struct = append(sorted_struct, key_value{key, value})
+	}
+
+	sort.Slice(sorted_struct, func(i, j int) bool {
+		return sorted_struct[i].Value < sorted_struct[j].Value
+	})
+
+	for _, key_value := range sorted_struct {
+		names = append(names, key_value.Key)
+		count = append(count, key_value.Value)
 	}
 
 	for i := 0; i < len(names); i++ {
@@ -431,6 +492,7 @@ func pull(w http.ResponseWriter, r *http.Request) {
 	names := []string{}
 	count := []int{}
 	colors := []string{}
+	mapUser := make(map[string]int)
 	db, err := pgxpool.Connect(context.Background(), "postgres://postgres:132313Igor@localhost:5432/sportsite")
 
 	if err != nil {
@@ -444,10 +506,29 @@ func pull(w http.ResponseWriter, r *http.Request) {
 		if t.Pull == 0 {
 			continue
 		} else {
-			names = append(names, t.Name+" "+t.Surname)
-			count = append(count, t.Pull)
+			mapUser[t.Name+" "+t.Surname] = t.Pull
+
 		}
 
+	}
+	type key_value struct {
+		Key   string
+		Value int
+	}
+
+	var sorted_struct []key_value
+
+	for key, value := range mapUser {
+		sorted_struct = append(sorted_struct, key_value{key, value})
+	}
+
+	sort.Slice(sorted_struct, func(i, j int) bool {
+		return sorted_struct[i].Value < sorted_struct[j].Value
+	})
+
+	for _, key_value := range sorted_struct {
+		names = append(names, key_value.Key)
+		count = append(count, key_value.Value)
 	}
 
 	for i := 0; i < len(names); i++ {
@@ -494,6 +575,7 @@ func ton(w http.ResponseWriter, r *http.Request) {
 	names := []string{}
 	count := []int{}
 	colors := []string{}
+	mapUser := make(map[string]int)
 	db, err := pgxpool.Connect(context.Background(), "postgres://postgres:132313Igor@localhost:5432/sportsite")
 
 	if err != nil {
@@ -504,8 +586,27 @@ func ton(w http.ResponseWriter, r *http.Request) {
 	for result.Next() {
 		var t Users
 		result.Scan(&t.Name, &t.Surname, &t.Ton)
-		names = append(names, t.Name+" "+t.Surname)
-		count = append(count, t.Ton)
+		mapUser[t.Name+" "+t.Surname] = t.Ton
+
+	}
+	type key_value struct {
+		Key   string
+		Value int
+	}
+
+	var sorted_struct []key_value
+
+	for key, value := range mapUser {
+		sorted_struct = append(sorted_struct, key_value{key, value})
+	}
+
+	sort.Slice(sorted_struct, func(i, j int) bool {
+		return sorted_struct[i].Value < sorted_struct[j].Value
+	})
+
+	for _, key_value := range sorted_struct {
+		names = append(names, key_value.Key)
+		count = append(count, key_value.Value)
 	}
 
 	for i := 0; i < len(names); i++ {
