@@ -41,13 +41,13 @@
                       <a class="nav-link mg-lg-2" href="#" onclick="squat()">Присед</a>
                   </li>
                   <li class="nav-item">
-                      <a class="nav-link mg-lg-2" href="#">Становая</a>
+                      <a class="nav-link mg-lg-2" href="#" onclick="dead()">Становая</a>
                   </li>
                   <li class="nav-item">
-                      <a class="nav-link mg-lg-2" href="#">Подтягивания</a>
+                      <a class="nav-link mg-lg-2" href="#" onclick="pull()">Подтягивания</a>
                   </li>
                   <li class="nav-item">
-                      <a class="nav-link mg-lg-2" href="#">Тонаж</a>
+                      <a class="nav-link mg-lg-2" href="#" onclick="ton()">Тонаж</a>
                   </li>
                   <li class="nav-item">
                     <a class="nav-link mg-lg-2" href="/logo" style="color: rgb(207, 203, 203);">Admin</a>
@@ -61,16 +61,48 @@
         </div>
       </header>
     <div class="jumbottron">
-      <div id="graf" class="graf">
-        <canvas id="myChart" style="width:100%;max-width:700px;height: 500px;">
+      <div  class="graf">
+        <div id="graf">
+          <canvas id="myChart" style="width:100%;max-width:700px;height: 500px; margin:0 auto;">
+            
+            
+            
+          </canvas>
+          <div id="reverse">
+            <button id="reverse_button" class = "reverse" onclick="rotateBody(1)">Во весь экран</button>  
+          </div>  
           
-          
-        </canvas>
+        </div>
+        
+        
+       
         
       </div>
     </div>
   <footer>
-    f
+      
+        <div class="tg-cont">
+          <img src="templates/img/photo.png" style="width: 35px;height: 35px;">
+          <a href="https://t.me/IlIgorlI" class="tg">Игорь</a>
+        </div>
+          
+        <div class="tg-cont">
+          <img src="templates/img/photo.png" style="width: 35px;height: 35px;">
+          <a href="https://t.me/jezvGG" class="tg">Гоша</a>
+        </div>
+        <div class="tg-cont">  
+          <img src="templates/img/photo.png" style="width: 35px;height: 35px;">
+          <a href="#" class="tg">Руслан</a>
+        </div>
+          
+        
+       
+
+      
+      
+      
+      
+
   </footer>
     
         

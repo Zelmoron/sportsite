@@ -16,38 +16,40 @@
     <main>
         <div class="container">
             <div class="item">
-                <form action="">
+                <form action="/insert" method="POST">
                     <p>Имя</p>
-                    <input type="text" required>
+                    <input type="text" name="username" required>
                     <p>Фамилия</p>
-                    <input type="text" required>
+                    <input type="text" name="usersurname" required>
                     <p>Жим</p>
-                    <input type="number" required>
+                    <input type="number" name="bench" required>
                     <p>Становая</p>
-                    <input type="number" required>
+                    <input type="number" name="dead" required>
                     <p>Присед</p>
-                    <input type="number" required>
+                    <input type="number" name="squat" required>
                     <p>Подтягивания</p>
-                    <input type="number" required>
+                    <input type="number" name="pull" required>
                     <button type="submit">
                         Добавить
                     </button>
                 </form>
             </div>
             <div class="item">
-                <form action="">
+                <form action="/update" method="POST">
                     <p>Имя</p>
-                    <input type="nu" required>
+                    <input type="text" name="username" required>
                     <p>Фамилия</p>
-                    <input type="text" required>
-                    <p>Жим</p>
-                    <input type="number" required>
-                    <p>Становая</p>
-                    <input type="number" required>
-                    <p>Присед</p>
-                    <input type="number" required>
-                    <p>Подтягивания</p>
-                    <input type="number" required>
+                    <input type="text" name="usersurname" required>
+                    <input type="number" name="ex" required>
+                    <select name="update">
+                        <optgroup label="Выбрать упражнение">
+                         <option value="Bench">Жим</option>
+                         <option value="Squat">Присед</option>
+                         <option value="Dead">Тяга</option>
+                        </optgroup>
+
+                    </select>
+                    
                     <button type="submit">
                         Изменить
                     </button>
@@ -55,9 +57,7 @@
             </div>
         </div>
     </main>
-    <footer>
-
-    </footer>
+    
 </body>
 </html>
 {{end}}
