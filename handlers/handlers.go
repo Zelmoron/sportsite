@@ -9,14 +9,14 @@ import (
 func Handlers() {
 	//создал роутер
 	rtr := mux.NewRouter()
-
+	var c App
 	//подключил свои стили
 	http.Handle("/templates/",
 		http.StripPrefix("/templates", http.FileServer(http.Dir("./templates/"))))
 
-	rtr.HandleFunc("/", index)
+	rtr.HandleFunc("/", c.index)
 	rtr.HandleFunc("/logo", logo)
-	rtr.HandleFunc("/get", get).Methods("POST")
+	rtr.HandleFunc("/get", c.get).Methods("POST")
 	rtr.HandleFunc("/insert", insert).Methods("POST")
 	rtr.HandleFunc("/update", update).Methods("POST")
 

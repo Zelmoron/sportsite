@@ -2,19 +2,26 @@ package handlers
 
 import (
 	"context"
-	"encoding/json"
+	"crypto/md5"
+	"encoding/hex"
+	"errors"
 	"fmt"
 	"html/template"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
-	"sort"
 	"strconv"
+	"time"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
+type App struct {
+	cache map[string]Admin
+}
 type Admin struct {
+	Id       int
 	Name     string
 	Password string
 }
@@ -34,7 +41,21 @@ type Users struct {
 }
 
 // функция для вывода главной странички
-func index(w http.ResponseWriter, r *http.Request) {
+func (c *App) index(w http.ResponseWriter, r *http.Request) {
+	token, err := readCookie("token", r)
+	if err != nil {
+		http.Redirect(w, r, "/logo", http.StatusSeeOther)
+		fmt.Print("Кука устарела")
+		return
+	}
+	fmt.Println(token)
+
+	if _, ok := c.cache[token]; !ok {
+		http.Redirect(w, r, "/logo", http.StatusSeeOther)
+		fmt.Print("Токена нет в кеше")
+		return
+	}
+	fmt.Println(c.cache[token].Id)
 	tmpl, err := template.ParseFiles("templates/index.html")
 
 	if err != nil {
@@ -44,9 +65,22 @@ func index(w http.ResponseWriter, r *http.Request) {
 	tmpl.ExecuteTemplate(w, "index", nil)
 
 }
+func readCookie(name string, r *http.Request) (value string, err error) {
+	if name == "" {
+		return value, errors.New("you are trying to read empty cookie")
+	}
+	cookie, err := r.Cookie(name)
+	if err != nil {
+		return value, err
+	}
+	str := cookie.Value
+	value, _ = url.QueryUnescape(str)
+	return value, err
+}
 
 // обработчик для перехода на стрницу авторизации админа
 func logo(w http.ResponseWriter, r *http.Request) {
+
 	tmpl, err := template.ParseFiles("templates/login.html")
 	if err != nil {
 		log.Println("Ошибка обработки html")
@@ -55,12 +89,12 @@ func logo(w http.ResponseWriter, r *http.Request) {
 	tmpl.ExecuteTemplate(w, "login", nil)
 }
 
-func get(w http.ResponseWriter, r *http.Request) {
+func (c *App) get(w http.ResponseWriter, r *http.Request) {
 	var a Admin
 	name := r.FormValue("username")
 	password := r.FormValue("userpassword")
 
-	db, err := pgxpool.Connect(context.Background(), "postgres://postgres:132313Igor@localhost:5432/sportsite")
+	db, err := pgxpool.Connect(context.Background(), "postgres://igor:132313Igor@localhost:5432/sportsite")
 
 	if err != nil {
 		log.Println("Error with connection")
@@ -68,22 +102,38 @@ func get(w http.ResponseWriter, r *http.Request) {
 	}
 	defer db.Close()
 
-	err = db.QueryRow(context.Background(), "SELECT Name,password FROM admin WHERE Name = $1 AND password = $2", name, password).Scan(&a.Name, &a.Password)
+	err = db.QueryRow(context.Background(), "SELECT Id,Name,password FROM admin WHERE Name = $1 AND password = $2", name, password).Scan(&a.Id, &a.Name, &a.Password)
 	if err != nil {
 
 		type Check struct {
 			Text string
 		}
-		c := Check{
+		e := Check{
 			Text: "Неправильно введен логин или пароль",
 		}
 		tmpl, err := template.ParseFiles("templates/login.html")
 		if err != nil {
 			log.Println("Ошибка обработки html в get")
 		}
-		tmpl.ExecuteTemplate(w, "login", c)
+		tmpl.ExecuteTemplate(w, "login", e)
 
 	} else {
+		//логин и пароль совпадают, поэтому генерируем токен, пишем его в кеш и в куки
+
+		time64 := time.Now().Unix()
+		timeInt := string(time64)
+		token := name + password + timeInt
+
+		hashToken := md5.Sum([]byte(token))
+		hashedToken := hex.EncodeToString(hashToken[:])
+		c.cache = make(map[string]Admin)
+		c.cache[hashedToken] = a
+
+		livingTime := 1 * time.Minute
+		expiration := time.Now().Add(livingTime)
+		//кука будет жить 1 час
+		cookie := http.Cookie{Name: "token", Value: url.QueryEscape(hashedToken), Expires: expiration}
+		http.SetCookie(w, &cookie)
 		tmpl, err := template.ParseFiles("templates/admin.html")
 		if err != nil {
 			log.Println("Ошибка обработки html в get")
@@ -115,7 +165,7 @@ func insert(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	db, err := pgxpool.Connect(context.Background(), "postgres://postgres:132313Igor@localhost:5432/sportsite")
+	db, err := pgxpool.Connect(context.Background(), "postgres://igor:132313Igor@localhost:5432/sportsite")
 
 	if err != nil {
 		log.Println("Error with connection")
@@ -167,7 +217,7 @@ func update(w http.ResponseWriter, r *http.Request) {
 
 	newIntEx, _ := strconv.Atoi(new_ex)
 
-	db, err := pgxpool.Connect(context.Background(), "postgres://postgres:132313Igor@localhost:5432/sportsite")
+	db, err := pgxpool.Connect(context.Background(), "postgres://igor:132313Igor@localhost:5432/sportsite")
 
 	if err != nil {
 		log.Println("Error with connection")
@@ -180,6 +230,7 @@ func update(w http.ResponseWriter, r *http.Request) {
 		ton       int
 	}
 	var u Up
+
 	err = db.QueryRow(context.Background(), fmt.Sprintf("SELECT %s,Ton Bench FROM users WHERE Name = $1 AND Surname = $2", ex), name, surname).Scan(&u.exercises, &u.ton)
 	if err != nil {
 		f, err := os.OpenFile("text.log",
@@ -226,417 +277,4 @@ func update(w http.ResponseWriter, r *http.Request) {
 
 	http.Redirect(w, r, "http://127.0.0.1:8080", http.StatusSeeOther)
 
-}
-
-// функция для отправки json на присед
-func squat(w http.ResponseWriter, r *http.Request) {
-	//подключение к бд и парсинг оттуда имен и результаты, цвет статичный , взависимости от упражнений
-	colorForGraf := []string{"rgba(255, 99, 132, 0.5)",
-		"rgba(255, 159, 64, 0.5)",
-		"rgba(255, 205, 86, 0.5)",
-		"rgba(75, 192, 192, 0.5)",
-		"rgba(54, 162, 235, 0.5)",
-		"rgba(153, 102, 255, 0.5)",
-		"rgba(201, 203, 207, 0.5)"}
-	names := []string{}
-	count := []int{}
-	colors := []string{}
-	mapUser := make(map[string]int)
-	db, err := pgxpool.Connect(context.Background(), "postgres://postgres:132313Igor@localhost:5432/sportsite")
-
-	if err != nil {
-		log.Println("Error with connection")
-	}
-	defer db.Close()
-	result, _ := db.Query(context.Background(), "SELECT Name,Surname,Squat FROM users")
-	for result.Next() {
-		var t Users
-		result.Scan(&t.Name, &t.Surname, &t.Squat)
-		if t.Squat == 0 {
-			continue
-		} else {
-			mapUser[t.Name+" "+t.Surname] = t.Squat
-
-		}
-
-	}
-	type key_value struct {
-		Key   string
-		Value int
-	}
-
-	var sorted_struct []key_value
-
-	for key, value := range mapUser {
-		sorted_struct = append(sorted_struct, key_value{key, value})
-	}
-
-	sort.Slice(sorted_struct, func(i, j int) bool {
-		return sorted_struct[i].Value < sorted_struct[j].Value
-	})
-
-	for _, key_value := range sorted_struct {
-		names = append(names, key_value.Key)
-		count = append(count, key_value.Value)
-	}
-
-	for i := 0; i < len(names); i++ {
-		j := i
-		if j == 7 {
-			j = 0
-		}
-		colors = append(colors, colorForGraf[j])
-
-	}
-
-	s := Ex{
-		XValues:   names,
-		YValues:   count,
-		BarColors: colors,
-	}
-	// Сериализация структуры в строку
-	jsonBytes, err := json.Marshal(&s)
-	if err != nil {
-		f, err := os.OpenFile("text.log",
-			os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-		if err != nil {
-			log.Println(err)
-		}
-		defer f.Close()
-		if _, err := f.WriteString("Ошибка выполнения Marshal 272\n"); err != nil {
-			log.Println(err)
-		}
-
-	}
-
-	w.Write(jsonBytes)
-}
-
-// функция для отправки json на жим
-func bench(w http.ResponseWriter, r *http.Request) {
-	colorForGraf := []string{"rgba(255, 99, 132, 0.5)",
-		"rgba(255, 159, 64, 0.5)",
-		"rgba(255, 205, 86, 0.5)",
-		"rgba(75, 192, 192, 0.5)",
-		"rgba(54, 162, 235, 0.5)",
-		"rgba(153, 102, 255, 0.5)",
-		"rgba(201, 203, 207, 0.5)"}
-	//подключение к бд и парсинг оттуда имен и результаты, цвет статичный , взависимости от упражнений
-	names := []string{}
-	count := []int{}
-	colors := []string{}
-	mapUser := make(map[string]int)
-	db, err := pgxpool.Connect(context.Background(), "postgres://postgres:132313Igor@localhost:5432/sportsite")
-
-	if err != nil {
-		log.Println("Error with connection")
-	}
-	defer db.Close()
-	result, _ := db.Query(context.Background(), "SELECT Name,Surname,Bench FROM users")
-	for result.Next() {
-		var t Users
-
-		result.Scan(&t.Name, &t.Surname, &t.Bench)
-		if t.Bench == 0 {
-			continue
-		} else {
-			mapUser[t.Name+" "+t.Surname] = t.Bench
-
-		}
-
-	}
-	type key_value struct {
-		Key   string
-		Value int
-	}
-
-	var sorted_struct []key_value
-
-	for key, value := range mapUser {
-		sorted_struct = append(sorted_struct, key_value{key, value})
-	}
-
-	sort.Slice(sorted_struct, func(i, j int) bool {
-		return sorted_struct[i].Value < sorted_struct[j].Value
-	})
-
-	for _, key_value := range sorted_struct {
-		names = append(names, key_value.Key)
-		count = append(count, key_value.Value)
-	}
-
-	for i := 0; i < len(names); i++ {
-		j := i
-		if j == 7 {
-			j = 0
-		}
-		colors = append(colors, colorForGraf[j])
-
-	}
-
-	s := Ex{
-		XValues:   names,
-		YValues:   count,
-		BarColors: colors,
-	}
-	// Сериализация структуры в строку
-	jsonBytes, err := json.Marshal(&s)
-	if err != nil {
-		f, err := os.OpenFile("text.log",
-			os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-		if err != nil {
-			log.Println(err)
-		}
-		defer f.Close()
-		if _, err := f.WriteString("Ошибка выполнения Marshal 337\n"); err != nil {
-			log.Println(err)
-		}
-
-	}
-
-	w.Write(jsonBytes)
-}
-
-func dead(w http.ResponseWriter, r *http.Request) {
-	colorForGraf := []string{"rgba(255, 99, 132, 0.5)",
-		"rgba(255, 159, 64, 0.5)",
-		"rgba(255, 205, 86, 0.5)",
-		"rgba(75, 192, 192, 0.5)",
-		"rgba(54, 162, 235, 0.5)",
-		"rgba(153, 102, 255, 0.5)",
-		"rgba(201, 203, 207, 0.5)"}
-	//подключение к бд и парсинг оттуда имен и результаты, цвет статичный , взависимости от упражнений
-	names := []string{}
-	count := []int{}
-	colors := []string{}
-	mapUser := make(map[string]int)
-	db, err := pgxpool.Connect(context.Background(), "postgres://postgres:132313Igor@localhost:5432/sportsite")
-
-	if err != nil {
-		log.Println("Error with connection")
-	}
-	defer db.Close()
-	result, _ := db.Query(context.Background(), "SELECT Name,Surname,Dead FROM users")
-	for result.Next() {
-		var t Users
-		result.Scan(&t.Name, &t.Surname, &t.Dead)
-		if t.Dead == 0 {
-			continue
-		} else {
-			mapUser[t.Name+" "+t.Surname] = t.Dead
-
-		}
-
-	}
-	type key_value struct {
-		Key   string
-		Value int
-	}
-
-	var sorted_struct []key_value
-
-	for key, value := range mapUser {
-		sorted_struct = append(sorted_struct, key_value{key, value})
-	}
-
-	sort.Slice(sorted_struct, func(i, j int) bool {
-		return sorted_struct[i].Value < sorted_struct[j].Value
-	})
-
-	for _, key_value := range sorted_struct {
-		names = append(names, key_value.Key)
-		count = append(count, key_value.Value)
-	}
-
-	for i := 0; i < len(names); i++ {
-		j := i
-		if j == 7 {
-			j = 0
-		}
-		colors = append(colors, colorForGraf[j])
-
-	}
-
-	s := Ex{
-		XValues:   names,
-		YValues:   count,
-		BarColors: colors,
-	}
-	// Сериализация структуры в строку
-	jsonBytes, err := json.Marshal(&s)
-	if err != nil {
-		f, err := os.OpenFile("text.log",
-			os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-		if err != nil {
-			log.Println(err)
-		}
-		defer f.Close()
-		if _, err := f.WriteString("Ошибка выполнения Marshal 400\n"); err != nil {
-			log.Println(err)
-		}
-
-	}
-
-	w.Write(jsonBytes)
-}
-
-func pull(w http.ResponseWriter, r *http.Request) {
-	colorForGraf := []string{"rgba(255, 99, 132, 0.5)",
-		"rgba(255, 159, 64, 0.5)",
-		"rgba(255, 205, 86, 0.5)",
-		"rgba(75, 192, 192, 0.5)",
-		"rgba(54, 162, 235, 0.5)",
-		"rgba(153, 102, 255, 0.5)",
-		"rgba(201, 203, 207, 0.5)"}
-	//подключение к бд и парсинг оттуда имен и результаты, цвет статичный , взависимости от упражнений
-	names := []string{}
-	count := []int{}
-	colors := []string{}
-	mapUser := make(map[string]int)
-	db, err := pgxpool.Connect(context.Background(), "postgres://postgres:132313Igor@localhost:5432/sportsite")
-
-	if err != nil {
-		log.Println("Error with connection")
-	}
-	defer db.Close()
-	result, _ := db.Query(context.Background(), "SELECT Name,Surname,Pull FROM users")
-	for result.Next() {
-		var t Users
-		result.Scan(&t.Name, &t.Surname, &t.Pull)
-		if t.Pull == 0 {
-			continue
-		} else {
-			mapUser[t.Name+" "+t.Surname] = t.Pull
-
-		}
-
-	}
-	type key_value struct {
-		Key   string
-		Value int
-	}
-
-	var sorted_struct []key_value
-
-	for key, value := range mapUser {
-		sorted_struct = append(sorted_struct, key_value{key, value})
-	}
-
-	sort.Slice(sorted_struct, func(i, j int) bool {
-		return sorted_struct[i].Value < sorted_struct[j].Value
-	})
-
-	for _, key_value := range sorted_struct {
-		names = append(names, key_value.Key)
-		count = append(count, key_value.Value)
-	}
-
-	for i := 0; i < len(names); i++ {
-		j := i
-		if j == 7 {
-			j = 0
-		}
-		colors = append(colors, colorForGraf[j])
-
-	}
-
-	s := Ex{
-		XValues:   names,
-		YValues:   count,
-		BarColors: colors,
-	}
-	// Сериализация структуры в строку
-	jsonBytes, err := json.Marshal(&s)
-	if err != nil {
-		f, err := os.OpenFile("text.log",
-			os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-		if err != nil {
-			log.Println(err)
-		}
-		defer f.Close()
-		if _, err := f.WriteString("Ошибка выполнения Marshal 463\n"); err != nil {
-			log.Println(err)
-		}
-
-	}
-
-	w.Write(jsonBytes)
-}
-
-func ton(w http.ResponseWriter, r *http.Request) {
-	colorForGraf := []string{"rgba(255, 99, 132, 0.5)",
-		"rgba(255, 159, 64, 0.5)",
-		"rgba(255, 205, 86, 0.5)",
-		"rgba(75, 192, 192, 0.5)",
-		"rgba(54, 162, 235, 0.5)",
-		"rgba(153, 102, 255, 0.5)",
-		"rgba(201, 203, 207, 0.5)"}
-	//подключение к бд и парсинг оттуда имен и результаты, цвет статичный , взависимости от упражнений
-	names := []string{}
-	count := []int{}
-	colors := []string{}
-	mapUser := make(map[string]int)
-	db, err := pgxpool.Connect(context.Background(), "postgres://postgres:132313Igor@localhost:5432/sportsite")
-
-	if err != nil {
-		log.Println("Error with connection")
-	}
-	defer db.Close()
-	result, _ := db.Query(context.Background(), "SELECT Name,Surname,Ton FROM users")
-	for result.Next() {
-		var t Users
-		result.Scan(&t.Name, &t.Surname, &t.Ton)
-		mapUser[t.Name+" "+t.Surname] = t.Ton
-
-	}
-	type key_value struct {
-		Key   string
-		Value int
-	}
-
-	var sorted_struct []key_value
-
-	for key, value := range mapUser {
-		sorted_struct = append(sorted_struct, key_value{key, value})
-	}
-
-	sort.Slice(sorted_struct, func(i, j int) bool {
-		return sorted_struct[i].Value < sorted_struct[j].Value
-	})
-
-	for _, key_value := range sorted_struct {
-		names = append(names, key_value.Key)
-		count = append(count, key_value.Value)
-	}
-
-	for i := 0; i < len(names); i++ {
-		j := i
-		if j == 7 {
-			j = 0
-		}
-		colors = append(colors, colorForGraf[j])
-
-	}
-
-	s := Ex{
-		XValues:   names,
-		YValues:   count,
-		BarColors: colors,
-	}
-	// Сериализация структуры в строку
-	jsonBytes, err := json.Marshal(&s)
-	if err != nil {
-		f, err := os.OpenFile("text.log",
-			os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-		if err != nil {
-			log.Println(err)
-		}
-		defer f.Close()
-		if _, err := f.WriteString("Ошибка выполнения Marshal 521\n"); err != nil {
-			log.Println(err)
-		}
-
-	}
-
-	w.Write(jsonBytes)
 }
