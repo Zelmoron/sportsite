@@ -14,8 +14,8 @@ func Handlers() {
 	http.Handle("/templates/",
 		http.StripPrefix("/templates", http.FileServer(http.Dir("./templates/"))))
 
-	rtr.HandleFunc("/", c.index)
-	rtr.HandleFunc("/logo", logo)
+	rtr.HandleFunc("/", index)
+	rtr.HandleFunc("/admin", c.admin)
 	rtr.HandleFunc("/get", c.get).Methods("POST")
 	rtr.HandleFunc("/insert", insert).Methods("POST")
 	rtr.HandleFunc("/update", update).Methods("POST")
