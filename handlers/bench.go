@@ -6,6 +6,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"site/settings"
+	"site/structs"
 	"sort"
 
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -13,17 +15,11 @@ import (
 
 // функция для отправки json на жим
 func bench(w http.ResponseWriter, r *http.Request) {
-	colorForGraf := []string{"rgba(255, 99, 132, 0.5)",
-		"rgba(255, 159, 64, 0.5)",
-		"rgba(255, 205, 86, 0.5)",
-		"rgba(75, 192, 192, 0.5)",
-		"rgba(54, 162, 235, 0.5)",
-		"rgba(153, 102, 255, 0.5)",
-		"rgba(201, 203, 207, 0.5)"}
+
 	//подключение к бд и парсинг оттуда имен и результаты, цвет статичный , взависимости от упражнений
 	names := []string{}
 	count := []int{}
-	colors := []string{}
+
 	mapUser := make(map[string]int)
 	db, err := pgxpool.Connect(context.Background(), "postgres://igor:132313Igor@localhost:5432/sportsite")
 
@@ -33,7 +29,7 @@ func bench(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 	result, _ := db.Query(context.Background(), "SELECT Name,Surname,Bench FROM users")
 	for result.Next() {
-		var t Users
+		var t structs.Users
 
 		result.Scan(&t.Name, &t.Surname, &t.Bench)
 		if t.Bench == 0 {
@@ -64,14 +60,7 @@ func bench(w http.ResponseWriter, r *http.Request) {
 		count = append(count, key_value.Value)
 	}
 
-	for i := 0; i < len(names); i++ {
-		j := i
-		if j == 7 {
-			j = 0
-		}
-		colors = append(colors, colorForGraf[j])
-
-	}
+	colors := settings.Color(names)
 
 	s := Ex{
 		XValues:   names,

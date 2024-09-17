@@ -30,32 +30,10 @@ type Ex struct {
 	YValues   []int    `json:"y"`
 	BarColors []string `json:"color"`
 }
-type Users struct {
-	Name    string
-	Surname string
-	Bench   int
-	Squat   int
-	Dead    int
-	Pull    int
-	Ton     int
-}
 
 // функция для вывода главной странички
-func (c *App) index(w http.ResponseWriter, r *http.Request) {
-	token, err := readCookie("token", r)
-	if err != nil {
-		http.Redirect(w, r, "/logo", http.StatusSeeOther)
-		fmt.Print("Кука устарела")
-		return
-	}
-	fmt.Println(token)
+func index(w http.ResponseWriter, r *http.Request) {
 
-	if _, ok := c.cache[token]; !ok {
-		http.Redirect(w, r, "/logo", http.StatusSeeOther)
-		fmt.Print("Токена нет в кеше")
-		return
-	}
-	fmt.Println(c.cache[token].Id)
 	tmpl, err := template.ParseFiles("templates/index.html")
 
 	if err != nil {
@@ -79,14 +57,38 @@ func readCookie(name string, r *http.Request) (value string, err error) {
 }
 
 // обработчик для перехода на стрницу авторизации админа
-func logo(w http.ResponseWriter, r *http.Request) {
-
-	tmpl, err := template.ParseFiles("templates/login.html")
+func (c *App) admin(w http.ResponseWriter, r *http.Request) {
+	token, err := readCookie("token", r)
 	if err != nil {
-		log.Println("Ошибка обработки html")
+		tmpl, err := template.ParseFiles("templates/login.html")
+		if err != nil {
+			log.Println("Ошибка обработки html")
+			return
+		}
+		tmpl.ExecuteTemplate(w, "login", nil)
+		fmt.Println("Кука устарела")
 		return
 	}
-	tmpl.ExecuteTemplate(w, "login", nil)
+	fmt.Println(token)
+
+	if _, ok := c.cache[token]; !ok {
+		tmpl, err := template.ParseFiles("templates/login.html")
+		if err != nil {
+			log.Println("Ошибка обработки html")
+			return
+		}
+		tmpl.ExecuteTemplate(w, "login", nil)
+		fmt.Println("Токена нет в кеше")
+		return
+	}
+	fmt.Println(c.cache[token].Id)
+	tmpl, err := template.ParseFiles("templates/admin.html")
+	if err != nil {
+		log.Println("Ошибка обработки html в get")
+		return
+	}
+	tmpl.ExecuteTemplate(w, "admin", nil)
+
 }
 
 func (c *App) get(w http.ResponseWriter, r *http.Request) {
